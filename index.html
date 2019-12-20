@@ -1,82 +1,161 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Sudeep workspace chart demo</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />    
-<link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link href="https://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
     <link href="jquery.orgchart.css" media="all" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-<style type="text/css">
-#orgChart{
-    width: auto;
-    height: auto;
-}
-
-#orgChartContainer{
-    width: 1000px;
-    height: 500px;
-    overflow: auto;
-    /* background: #eeeeee; */
-}
-
+    <style type="text/css">
+        #orgChart {
+            width: auto;
+            height: auto;
+        }
+        
+        #orgChartContainer {
+            width: 1000px;
+            height: 500px;
+            overflow: auto;
+            /* background: #eeeeee; */
+        }
     </style>
 </head>
+
 <body>
 
 
-<div class="container">
-    <div id="orgChartContainer ">
-      <div id="orgChart"></div>
+    <div class="container">
+        <div id="orgChartContainer ">
+            <div id="orgChart"></div>
+        </div>
+
+        <button id="saveData" type="button" class="btn btn-primary btn-lg float-right">Save</button>
+
+        <div id="consoleOutput">
+        </div>
+
+
+
+        <div id="confirmDialog" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Alert!!</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true" onclick="hideModal('confirmDialog')">&times;</span>
+              </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete? </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="hideModal('confirmDialog')">No</button>
+                        <button type="button" class="btn btn-danger deleteNodeId" onclick="deleteNode(this.id)">Yes,Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div id="hasChildNodAlert" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Alert!!</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true" onclick="hideModal('hasChildNodAlert')">&times;</span>
+              </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>This specific node has child node delete them first </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-info" data-dismiss="modal" onclick="hideModal('hasChildNodAlert')">Ok</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
     </div>
 
-    <button id="saveData" type="button" class="btn btn-primary btn-lg float-right">Save</button>
 
-    <div id="consoleOutput">
-    </div>
-
-</div>
-
-
-<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="jquery.orgchart.js"></script>
     <script type="text/javascript">
-    var testData = [
-        {id: 1, name: 'Start', parent: 0}
-
-        
-    ];
-    $(function(){
-        org_chart = $('#orgChart').orgChart({
-            data: testData,
-            showControls: true,
-            allowEdit: true,
-            onAddNode: function(node){ 
-                log('Created new node on node '+node.data.id);
-                org_chart.newNode(node.data.id); 
-            },
-            onDeleteNode: function(node){
-                log('Deleted node '+node.data.id);
-                org_chart.deleteNode(node.data.id); 
-            },
-            onClickNode: function(node){
-                console.log("data:",node.data)
-                log('Clicked node '+node.data.id);
+        var testData = [{
+                id: 1,
+                name: 'Start',
+                parent: 0
             }
+
+
+        ];
+        $(function() {
+            org_chart = $('#orgChart').orgChart({
+                data: testData,
+                showControls: true,
+                allowEdit: true,
+                onAddNode: function(node) {
+                    log('Created new node on node ' + node.data.id);
+                    org_chart.newNode(node.data.id);
+                },
+                onDeleteNode: function(node) {
+                    log('Deleted node ' + node.data.id);
+                    if (hasChild(node.data.id)) {
+                        $('#hasChildNodAlert').show();
+                    } else {
+                        $('#confirmDialog').show();
+                        $(".deleteNodeId").attr("id", node.data.id);
+                    }
+                    // org_chart.deleteNode(node.data.id); 
+                },
+                onClickNode: function(node) {
+                    console.log("data:", node.data)
+                    log('Clicked node ' + node.data.id);
+                }
+            });
         });
-    });
 
-    // just for example purpose
-    function log(text){        
-        // $('#consoleOutput').append('<p>'+text+'</p>')        
-    }
+        function hasChild(nodeId) {
+            var hasChild = false;
+            var nodes = org_chart.getData();
+            nodes.map(node => {
+                if (node.parent == nodeId)
+                    hasChild = true;
+            })
+            return hasChild;
+        }
 
-    $('#saveData').on('click', function() {
-        console.log("data",org_chart.getData());
-        var tree = JSON.stringify(org_chart.getData(), null, 2);
-        $('#consoleOutput').empty();
-        $('#consoleOutput').append('<p>'+tree+'</p>');
-    });
+        function hideModal(modalId) {
+            $('#' + modalId).hide();
+        }
 
+        function deleteNode(nodeId) {
+            org_chart.deleteNode(nodeId);
+            $('#confirmDialog').hide();
+            log('Deleted node deleted:' + nodeId);
+
+        }
+
+        // just for example purpose
+        function log(text) {
+            // $('#consoleOutput').append('<p>'+text+'</p>')        
+        }
+
+        $('#saveData').on('click', function() {
+
+            var tree = JSON.stringify(org_chart.getData(), null, 2);
+            $('#consoleOutput').empty();
+            $('#consoleOutput').append('<p>' + tree + '</p>');
+        });
     </script>
 </body>
+
 </html>
