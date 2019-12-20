@@ -4,6 +4,8 @@ jquery.orgChart
 jquery plugin for org chart, use a javascript array as input.
 inspired by https://github.com/caprica/jquery-orgchart
 
+https://sudeepchart.sudeepcvatpiserve.now.sh 
+
 [see a demo here](http://www.mit.edu/~wangyu/jquery.orgChart/example.html)
 
 Usage
